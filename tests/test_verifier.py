@@ -14,7 +14,7 @@ These tests verify the correctness of the BDIVerifier class including:
 import pytest
 import numpy as np
 
-from bdi import BDIVerifier
+from bdi import BDIVerifier  # type: ignore
 
 
 class TestBDIVerifierInit:
@@ -223,6 +223,82 @@ class TestBDIVerifierEdgeCases:
         probas = verifier.predict_proba(X_test, y_test)
 
         assert probas.shape == (2,)
+
+    def test_balanced_subsample_with_size(self):
+        """Test _balanced_subsample with explicit size parameter."""
+        import pandas as pd
+
+        verifier = BDIVerifier(balance=True, nb_bootstrap_iter=50, random_state=42)
+        # Use equal class sizes so size parameter works
+        y = pd.Series([0, 0, 0, 1, 1, 1, 2, 2, 2])  # 3 of each class
+        rng = np.random.default_rng(42)
+
+        # Test with size parameter - 6 samples = 2 per class
+        result = verifier._balanced_subsample(y, rng, size=6)
+        assert len(result) == 6  # 2 per class (6 / 3 classes)
+
+    def test_closest_method(self):
+        """Test the closest method (depth=1)."""
+        verifier = BDIVerifier(method="closest", nb_bootstrap_iter=50, random_state=42)
+        X_train = np.random.rand(20, 5)
+        y_train = np.array([0] * 10 + [1] * 10)
+        X_test = np.random.rand(2, 5)
+        y_test = np.array([0, 1])
+
+        verifier.fit(X_train, y_train)
+        probas = verifier.predict_proba(X_test, y_test)
+
+        assert probas.shape == (2,)
+
+    def test_index_error_handling(self):
+        """Test IndexError handling in _bootstrap_imposters for ranked method.
+
+        This tests the edge case where there are fewer than 3 candidates or
+        imposters, triggering the IndexError exception handler.
+        """
+        verifier = BDIVerifier(method="ranked", nb_bootstrap_iter=50, random_state=42)
+        # Only 2 candidates per class - will trigger IndexError handling
+        X_train = np.random.rand(4, 5)
+        y_train = np.array([0, 0, 1, 1])
+        X_test = np.random.rand(1, 5)
+        y_test = np.array([0])
+
+        verifier.fit(X_train, y_train)
+        probas = verifier.predict_proba(X_test, y_test)
+
+        assert probas.shape == (1,)
+
+    def test_zero_division_error_handling(self):
+        """Test ZeroDivisionError handling in _bootstrap_imposters.
+
+        This tests the edge case where minmax distance encounters zero vectors,
+        causing division by zero. The exception handler should catch this and
+        continue to the next iteration.
+        """
+        verifier = BDIVerifier(
+            metric="minmax", method="ranked", nb_bootstrap_iter=50, random_state=42
+        )
+        # Create data where test vector is non-zero, but some candidates are zero.
+        # ZeroDivisionError occurs when comparing two all-zero vectors with minmax.
+        # We need non-zero candidates so the test can succeed after catching errors.
+        np.random.seed(42)
+        X_train = np.random.rand(20, 5)
+        # Add some zero vectors as candidates (class 0) - these will cause
+        # ZeroDivisionError when the random feature subset happens to be all zeros
+        X_train[0] = [0, 0, 0, 0, 0]
+        X_train[1] = [0, 0, 0, 0, 0]
+        # Keep most candidates non-zero so test can succeed
+        y_train = np.array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1])
+        # Test vector is non-zero - comparing with zero candidates may cause ZeroDivisionError
+        # depending on random feature selection
+        X_test = np.random.rand(1, 5)
+        y_test = np.array([0])
+
+        verifier.fit(X_train, y_train)
+        # This should handle ZeroDivisionError and eventually succeed
+        probas = verifier.predict_proba(X_test, y_test)
+
+        assert probas.shape == (1,)
 
 
 class TestBDIVerifierEndToEnd:

@@ -6,6 +6,7 @@ Tests for evaluation metrics in bdi.evaluation.
 These tests verify the correctness of accuracy, auc, c_at_1, and pan_metrics.
 """
 
+import numpy as np
 
 from bdi import accuracy, auc, c_at_1, pan_metrics
 
@@ -43,14 +44,14 @@ class TestAuc:
 
     def test_perfect_auc(self):
         """Perfect separation should give AUC 1.0."""
-        predictions = [0.1, 0.2, 0.8, 0.9]
-        ground_truth = [0.0, 0.0, 1.0, 1.0]
+        predictions = np.array([0.1, 0.2, 0.8, 0.9])
+        ground_truth = np.array([0.0, 0.0, 1.0, 1.0])
         assert auc(predictions, ground_truth) == 1.0
 
     def test_random_auc(self):
         """Random predictions should give AUC around 0.5."""
-        predictions = [0.5, 0.5, 0.5, 0.5]
-        ground_truth = [0.0, 0.0, 1.0, 1.0]
+        predictions = np.array([0.5, 0.5, 0.5, 0.5])
+        ground_truth = np.array([0.0, 0.0, 1.0, 1.0])
         assert auc(predictions, ground_truth) == 0.5
 
 
@@ -82,8 +83,8 @@ class TestPanMetrics:
 
     def test_returns_tuple(self):
         """Should return a tuple of three values."""
-        predictions = [0.1, 0.2, 0.8, 0.9]
-        ground_truth = [0.0, 0.0, 1.0, 1.0]
+        predictions = np.array([0.1, 0.2, 0.8, 0.9])
+        ground_truth = np.array([0.0, 0.0, 1.0, 1.0])
         result = pan_metrics(predictions, ground_truth)
 
         assert isinstance(result, tuple)
@@ -91,8 +92,8 @@ class TestPanMetrics:
 
     def test_all_correct(self):
         """Perfect predictions should give high scores."""
-        predictions = [0.1, 0.2, 0.8, 0.9]
-        ground_truth = [0.0, 0.0, 1.0, 1.0]
+        predictions = np.array([0.1, 0.2, 0.8, 0.9])
+        ground_truth = np.array([0.0, 0.0, 1.0, 1.0])
         acc, auc_score, c1 = pan_metrics(predictions, ground_truth)
 
         assert acc == 1.0

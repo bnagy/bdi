@@ -62,6 +62,26 @@ class TestVectorizerFit:
 
         assert len(vectorizer.feature_names) > 0
 
+    def test_fit_tf_std(self):
+        """Test tf_std vector space."""
+        vectorizer = Vectorizer(mfi=10, vector_space="tf_std")
+        texts = ["hello world", "hello there"]
+
+        vectorizer.fit(texts)
+        result = vectorizer.transform(texts)
+
+        assert result.shape[0] == 2
+
+    def test_fit_bin(self):
+        """Test bin vector space."""
+        vectorizer = Vectorizer(mfi=10, vector_space="bin")
+        texts = ["hello world", "hello there"]
+
+        vectorizer.fit(texts)
+        result = vectorizer.transform(texts)
+
+        assert result.shape[0] == 2
+
 
 class TestVectorizerTransform:
     """Tests for Vectorizer.transform method."""

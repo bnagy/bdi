@@ -147,6 +147,18 @@ class TestScoreShifterCorrectScores:
 
         assert all(r == 0.5 for r in result)
 
+    def test_correct_scores_out_of_range_warning(self):
+        """Scores outside [0,1] should trigger a warning."""
+        import warnings
+        from bdi.score_shifting import correct_scores
+
+        scores = [-0.1, 0.5, 1.1]
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter("always")
+            result = correct_scores(scores, p1=0.25, p2=0.75)
+            assert len(w) == 1
+            assert "scores are expected to be in [0,1]" in str(w[0].message)
+
 
 class TestScoreShifterEndToEnd:
     """End-to-end tests for ScoreShifter."""

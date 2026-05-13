@@ -54,7 +54,7 @@ def minmax(x: NDArray[np.float64], y: NDArray[np.float64]) -> float:
             maxs += b
             mins += a
 
-    if maxs >= 0.0:
+    if maxs > 0.0:
         return 1.0 - (mins / maxs)
     return 0.0
 

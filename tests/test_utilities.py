@@ -7,8 +7,16 @@ These tests verify the correctness of utility functions.
 """
 
 import numpy as np
+import tempfile
+import os
 
-from bdi.utilities import binarize, make_up_lies
+from bdi.utilities import (
+    binarize,
+    make_up_lies,
+    load_ground_truth,
+    train_dev_split,
+    load_pan_dataset,
+)
 
 
 class TestBinarize:
@@ -74,3 +82,131 @@ class TestMakeUpLies:
         # Lies should have different labels than original
         for i in range(3):
             assert ret_y[i] != ret_y[i + 3]
+
+
+class TestLoadGroundTruth:
+    """Tests for load_ground_truth function."""
+
+    def test_load_ground_truth_basic(self):
+        """Test basic ground truth loading."""
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".txt", delete=False) as f:
+            f.write("prob1 Y\n")
+            f.write("prob2 N\n")
+            f.write("prob3 Y\n")
+            filepath = f.name
+
+        try:
+            labels = ["prob1", "prob2", "prob3"]
+            result = load_ground_truth(filepath, labels)
+            assert result == [1.0, 0.0, 1.0]
+        finally:
+            os.unlink(filepath)
+
+    def test_load_ground_truth_all_yes(self):
+        """Test with all Y outcomes."""
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".txt", delete=False) as f:
+            f.write("prob1 Y\n")
+            f.write("prob2 Y\n")
+            filepath = f.name
+
+        try:
+            labels = ["prob1", "prob2"]
+            result = load_ground_truth(filepath, labels)
+            assert result == [1.0, 1.0]
+        finally:
+            os.unlink(filepath)
+
+
+class TestTrainDevSplit:
+    """Tests for train_dev_split function."""
+
+    def test_train_dev_split_shapes(self):
+        """Test that split produces correct shapes."""
+        X = np.array(
+            [[1.0, 0.0], [0.0, 1.0], [1.0, 1.0], [0.5, 0.5], [0.3, 0.7], [0.8, 0.2]]
+        )
+        y = [0, 1, 2, 0, 1, 2]
+
+        X_dev, y_dev, X_test, y_test, gt = train_dev_split(X, y)
+
+        assert X_dev.shape[0] == 3
+        assert X_test.shape[0] == 3
+        assert len(y_dev) == 3
+        assert len(y_test) == 3
+        assert len(gt) == 3
+
+    def test_train_dev_split_ground_truth(self):
+        """Test that ground truth has correct values."""
+        X = np.array(
+            [[1.0, 0.0], [0.0, 1.0], [1.0, 1.0], [0.5, 0.5], [0.3, 0.7], [0.8, 0.2]]
+        )
+        y = [0, 1, 2, 0, 1, 2]
+
+        X_dev, y_dev, X_test, y_test, gt = train_dev_split(X, y)
+
+        # Ground truth should be 0.0 or 1.0
+        assert all(g in [0.0, 1.0] for g in gt)
+
+
+class TestLoadPanDataset:
+    """Tests for load_pan_dataset function."""
+
+    def test_load_pan_dataset_basic(self):
+        """Test basic PAN dataset loading."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            # Create author directory
+            author_dir = os.path.join(tmpdir, "author1")
+            os.makedirs(author_dir)
+
+            # Create training file
+            with open(os.path.join(author_dir, "doc1.txt"), "w") as f:
+                f.write("Some text content")
+
+            # Create unknown file
+            with open(os.path.join(author_dir, "unknown.txt"), "w") as f:
+                f.write("Unknown text")
+
+            train_data, test_data = load_pan_dataset(tmpdir)
+
+            assert len(train_data) == 1
+            assert len(test_data) == 1
+            assert train_data[0][0] == "author1"
+            assert test_data[0][0] == "author1"
+
+    def test_load_pan_dataset_multiple_authors(self):
+        """Test with multiple authors."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            for i in range(2):
+                author_dir = os.path.join(tmpdir, f"author{i}")
+                os.makedirs(author_dir)
+                with open(os.path.join(author_dir, "doc1.txt"), "w") as f:
+                    f.write(f"Text from author {i}")
+
+            train_data, test_data = load_pan_dataset(tmpdir)
+
+            assert len(train_data) == 2
+            assert len(test_data) == 0
+
+
+class TestGetVocabSize:
+    """Tests for get_vocab_size function."""
+
+    def test_get_vocab_size_basic(self):
+        """Test basic vocabulary size calculation."""
+        from bdi.utilities import get_vocab_size
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            # Create train subdirectory
+            train_dir = os.path.join(tmpdir, "train")
+            os.makedirs(train_dir)
+
+            # Create author directory
+            author_dir = os.path.join(train_dir, "author1")
+            os.makedirs(author_dir)
+
+            # Create training file
+            with open(os.path.join(author_dir, "doc1.txt"), "w") as f:
+                f.write("hello world hello")
+
+            vocab_size = get_vocab_size(tmpdir, ngram_type="word", ngram_size=1)
+            assert vocab_size >= 1

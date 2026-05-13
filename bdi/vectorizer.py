@@ -13,7 +13,7 @@ import scipy.sparse as sp
 import numpy as np
 from numpy.typing import NDArray
 from sklearn.base import BaseEstimator
-from typing import cast
+from typing import Collection, cast
 from sklearn.pipeline import Pipeline
 from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
 from sklearn.preprocessing import StandardScaler, Normalizer
@@ -189,7 +189,7 @@ class Vectorizer:
             v = CountVectorizer(**self.params)
             self.transformer = Pipeline([("s1", v), ("s2", n)])
 
-    def fit(self, texts):
+    def fit(self, texts: Collection[str]) -> Vectorizer:
         """
         Fit the vectorizer to texts.
 
@@ -203,7 +203,7 @@ class Vectorizer:
         self.feature_names = self.transformer.named_steps["s1"].get_feature_names_out()
         return self
 
-    def transform(self, texts):
+    def transform(self, texts: Collection[str]) -> NDArray[np.float64]:
         """
         Transform texts to feature vectors.
 
@@ -215,7 +215,7 @@ class Vectorizer:
         """
         return self.transformer.transform(texts).toarray()
 
-    def fit_transform(self, texts):
+    def fit_transform(self, texts: Collection[str]) -> NDArray[np.float64]:
         """
         Fit and transform in one step.
 

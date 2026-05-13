@@ -14,7 +14,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import FunctionTransformer
 
-from bdi import BDIVerifier
+from bdi import BDIVerifier  # type: ignore
 
 # Load gold results from numpy file
 GOLD_SCORES = np.load("tests/gold_e2e_results.npy")

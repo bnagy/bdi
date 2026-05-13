@@ -94,6 +94,12 @@ class TestMinmax:
         y = np.array([0.5, 0.5, 0.5])
         assert minmax(x, y) == 0.0
 
+    def test_zero_vectors(self):
+        """Zero vectors should return 0 (edge case for maxs=0)."""
+        x = np.zeros(3)
+        y = np.zeros(3)
+        assert minmax(x, y) == 0.0
+
 
 class TestCommonNgrams:
     """Tests for the common n-grams distance metric."""
