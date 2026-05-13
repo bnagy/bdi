@@ -13,7 +13,7 @@ import scipy.sparse as sp
 import numpy as np
 from numpy.typing import NDArray
 from sklearn.base import BaseEstimator
-from typing import Collection, cast
+from typing import Any, Collection, cast
 from sklearn.pipeline import Pipeline
 from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
 from sklearn.preprocessing import StandardScaler, Normalizer
@@ -203,7 +203,7 @@ class Vectorizer:
         self.feature_names = self.transformer.named_steps["s1"].get_feature_names_out()
         return self
 
-    def transform(self, texts: Collection[str]) -> NDArray[np.float64]:
+    def transform(self, texts: Collection[str]) -> np.ndarray:
         """
         Transform texts to feature vectors.
 
@@ -213,9 +213,13 @@ class Vectorizer:
         Returns:
             Dense array of shape (n_texts, n_features).
         """
-        return self.transformer.transform(texts).toarray()
+        # sklearn Pipeline.transform returns a sparse matrix; toarray() converts to dense.
+        # We use cast() because scipy's type stubs don't properly type toarray()'s return.
+        sparse_result = cast(sp.spmatrix, self.transformer.transform(texts))
+        dense_result: np.ndarray = np.array(sparse_result)
+        return dense_result
 
-    def fit_transform(self, texts: Collection[str]) -> NDArray[np.float64]:
+    def fit_transform(self, texts: Collection[str]) -> np.ndarray:
         """
         Fit and transform in one step.
 
