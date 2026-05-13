@@ -22,7 +22,7 @@ GOLD_SCORES = np.load("tests/gold_e2e_results.npy")
 
 def load_and_prepare_data(data_dir: str):
     """Load PAN dataset and prepare for verification."""
-    from ruzicka.utilities import load_pan_dataset
+    from bdi.utilities import load_pan_dataset
 
     train_data, test_data = load_pan_dataset(data_dir)
     train_labels, train_documents = zip(*train_data)

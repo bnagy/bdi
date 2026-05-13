@@ -188,6 +188,7 @@ class TestMetricsBenchmark:
         y = np.random.rand(1000)
 
         # Run multiple iterations to test performance
+        result = 0.0
         for _ in range(100):
             result = metric_func(x, y)
 

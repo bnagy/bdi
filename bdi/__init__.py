@@ -27,11 +27,19 @@ logger.propagate = False
 
 __version__ = "1.0.0"
 
-from .verifier import BDIVerifier
-from .vectorizer import Vectorizer
-from .score_shifting import ScoreShifter
-from .evaluation import accuracy, auc, c_at_1, pan_metrics
-from .metrics import manhattan, euclidean, minmax, common_ngrams, cosine, nini
+# Import submodules - noqa: E402
+from .verifier import BDIVerifier  # noqa: E402
+from .vectorizer import Vectorizer  # noqa: E402
+from .score_shifting import ScoreShifter  # noqa: E402
+from .evaluation import accuracy, auc, c_at_1, pan_metrics  # noqa: E402
+from .metrics import (  # noqa: E402
+    manhattan,
+    euclidean,
+    minmax,
+    common_ngrams,
+    cosine,
+    nini,
+)
 
 __all__ = [
     "BDIVerifier",

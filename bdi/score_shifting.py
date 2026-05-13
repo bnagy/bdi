@@ -167,7 +167,6 @@ class ScoreShifter:
 
         objective_scores = np.zeros((nb_thresholds, nb_thresholds))
 
-        gt = np.array(ground_truth_scores)
         for i, j in permutations(range(nb_thresholds), 2):
             p1, p2 = thresholds[i], thresholds[j]
 

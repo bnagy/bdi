@@ -1,14 +1,13 @@
 #!/usr/bin/env python
 import sys
 
-sys.path.insert(0, "/Users/ben/code/ruzicka")
 sys.path.insert(0, "/Users/ben/code/bdi")
 import numpy as np
 from sklearn.preprocessing import LabelEncoder
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import FunctionTransformer
-from ruzicka.utilities import load_pan_dataset
+from bdi.utilities import load_pan_dataset
 from bdi import BDIVerifier
 
 data_dir = "/Users/ben/code/ruzicka/data/2014/du_essays/train"
@@ -48,7 +47,7 @@ scores = verifier.predict_proba(test_X, test_y, nb_imposters=30)
 
 print(f"Scores: {scores}")
 print(f"Length: {len(scores)}")
-print(f"\nFormatted for gold_e2e_results.py:")
+print("\nFormatted for gold_e2e_results.py:")
 print("GOLD_SCORES = np.array([")
 for i in range(0, len(scores), 10):
     row = scores[i : i + 10]

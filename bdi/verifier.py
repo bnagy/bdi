@@ -148,9 +148,10 @@ class BDIVerifier:
             n_smp = int(size / len(y.value_counts().index))
 
         for label in y.value_counts().index:
-            samples = y[y == label].index.values
+            idx = pd.Series(y[y == label]).index
+            samples = np.asarray(idx)
             indexes = rng.choice(len(samples), size=n_smp, replace=False)
-            subsample += samples[indexes].tolist()
+            subsample += list(samples[indexes])
 
         return subsample
 

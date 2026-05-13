@@ -7,9 +7,13 @@ This module provides the Vectorizer class for converting text documents
 into numerical feature vectors suitable for use with BDIVerifier.
 """
 
+from __future__ import annotations
+
 import scipy.sparse as sp
 import numpy as np
+from numpy.typing import NDArray
 from sklearn.base import BaseEstimator
+from typing import cast
 from sklearn.pipeline import Pipeline
 from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
 from sklearn.preprocessing import StandardScaler, Normalizer
@@ -40,7 +44,9 @@ class StdDevScaler(BaseEstimator):
         Foundations', LLC 23:3 (2008).
     """
 
-    def fit(self, X, y=None):
+    weights_: np.ndarray
+
+    def fit(self, X: sp.spmatrix | NDArray[np.float64], y=None) -> StdDevScaler:  # type: ignore[override]
         """
         Compute column-wise standard deviations.
 
@@ -52,10 +58,10 @@ class StdDevScaler(BaseEstimator):
             self: The fitted scaler.
         """
         scaler = StandardScaler(with_mean=False).fit(X)
-        self.weights_ = scaler.scale_
+        self.weights_ = np.asarray(scaler.scale_)
         return self
 
-    def transform(self, X):
+    def transform(self, X: sp.spmatrix | NDArray[np.float64]) -> sp.spmatrix:  # type: ignore[override]
         """
         Scale data by dividing by standard deviations.
 
@@ -66,13 +72,19 @@ class StdDevScaler(BaseEstimator):
             Transformed data with same shape as input.
         """
         if not sp.isspmatrix_csr(X):
-            X = sp.csr_matrix(X, dtype=np.float64)
-        for i in range(X.shape[0]):
-            start, end = X.indptr[i], X.indptr[i + 1]
-            X.data[start:end] /= self.weights_[X.indices[start:end]]
-        return X
+            X_csr = sp.csr_matrix(X, dtype=np.float64)
+        else:
+            X_csr = cast(sp.csr_matrix, X)
+        for i in range(X_csr.shape[0]):
+            start, end = X_csr.indptr[i], X_csr.indptr[i + 1]
+            X_csr.data[start:end] = (
+                X_csr.data[start:end] / self.weights_[X_csr.indices[start:end]]
+            )
+        return X_csr
 
-    def fit_transform(self, X, y=None):
+    def fit_transform(
+        self, X: sp.spmatrix | NDArray[np.float64], y=None
+    ) -> sp.spmatrix:
         """
         Fit and transform in one step.
 
@@ -107,12 +119,12 @@ class Vectorizer:
         mfi: int = 100,
         ngram_type: str = "word",
         ngram_size: int = 1,
-        vocabulary=None,
+        vocabulary: list[str] | None = None,
         vector_space: str = "tf",
         lowercase: bool = True,
         min_df: float = 0.0,
         max_df: float = 1.0,
-        ignore: list = None,
+        ignore: list[str] | None = None,
     ):
         """
         Initialize the vectorizer.

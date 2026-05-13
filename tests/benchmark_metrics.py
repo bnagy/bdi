@@ -89,7 +89,7 @@ def benchmark_metric(
     times = []
     for _ in range(iterations):
         start = time.perf_counter()
-        result = metric_func(x, y)
+        metric_func(x, y)
         end = time.perf_counter()
         times.append(end - start)
 

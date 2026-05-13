@@ -6,10 +6,7 @@ Tests for utilities in bdi.utilities.
 These tests verify the correctness of utility functions.
 """
 
-import pytest
 import numpy as np
-import tempfile
-import os
 
 from bdi.utilities import binarize, make_up_lies
 

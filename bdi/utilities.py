@@ -109,7 +109,7 @@ def load_ground_truth(filepath: str, labels: Collection[str]) -> list:
             outcome = 0.0
         ground_truth[problem_id] = outcome
 
-    return [ground_truth[l] for l in labels]
+    return [ground_truth[label] for label in labels]
 
 
 def train_dev_split(
@@ -134,7 +134,7 @@ def train_dev_split(
     X_dev, X_test, y_dev, y_test = train_test_split(
         train_X, train_y, test_size=0.5, random_state=random_state, stratify=train_y
     )
-    test_gt_scores = []
+    test_gt_scores: list = []
 
     np.random.seed(random_state)
     author_options = set(train_y)
@@ -150,7 +150,7 @@ def train_dev_split(
         else:
             test_gt_scores.append(1.0)
 
-    return X_dev, y_dev, X_test, y_test, test_gt_scores
+    return np.asarray(X_dev), y_dev, np.asarray(X_test), y_test, test_gt_scores
 
 
 def binarize(scores: Collection[float]) -> list:

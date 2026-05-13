@@ -6,8 +6,6 @@ Tests for evaluation metrics in bdi.evaluation.
 These tests verify the correctness of accuracy, auc, c_at_1, and pan_metrics.
 """
 
-import pytest
-import numpy as np
 
 from bdi import accuracy, auc, c_at_1, pan_metrics
 
