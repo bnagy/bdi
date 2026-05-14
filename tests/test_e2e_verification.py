@@ -38,7 +38,7 @@ def load_and_prepare_data(data_dir: str):
         TfidfVectorizer(
             sublinear_tf=True,
             use_idf=False,
-            norm="l2",
+            norm="l1",
             analyzer="char",
             ngram_range=(2, 4),
             max_features=1000,
@@ -100,6 +100,10 @@ class TestE2EVerification:
             f"DEBUG: scipy version = {__import__('scipy').__version__}", file=sys.stderr
         )
         print(f"DEBUG: numpy version = {np.__version__}", file=sys.stderr)
+        print(
+            f"DEBUG: sklearn version = {__import__('sklearn').__version__}",
+            file=sys.stderr,
+        )
 
         # Verify against gold standard
         assert np.allclose(
