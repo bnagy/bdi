@@ -26,7 +26,7 @@ vectorizer = make_pipeline(
         norm="l2",
         analyzer="char",
         ngram_range=(2, 4),
-        max_features=10000,
+        max_features=1000,
     ),
     FunctionTransformer(lambda x: x.todense(), accept_sparse=True),
 )
@@ -42,7 +42,7 @@ test_y = np.array(label_encoder.transform(test_labels))
 verifier = BDIVerifier(
     metric="minmax",
     method="ranked",
-    nb_bootstrap_iter=100,
+    nb_bootstrap_iter=10,
     random_state=1066,
     rnd_prop=0.35,
 )

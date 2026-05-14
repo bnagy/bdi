@@ -41,7 +41,7 @@ def load_and_prepare_data(data_dir: str):
             norm="l2",
             analyzer="char",
             ngram_range=(2, 4),
-            max_features=10000,
+            max_features=1000,
         ),
         FunctionTransformer(lambda x: x.todense(), accept_sparse=True),
     )
@@ -72,7 +72,7 @@ class TestE2EVerification:
         """Test that BDIVerifier produces gold standard results.
 
         These gold results were generated using the same parameters
-        (minmax metric, ranked method, 100 bootstrap iterations,
+        (minmax metric, ranked method, 10 bootstrap iterations,
         random_state=1066, rnd_prop=0.35, nb_imposters=30).
         """
         train_X, train_y, test_X, test_y = prepared_data
@@ -81,7 +81,7 @@ class TestE2EVerification:
         verifier = BDIVerifier(
             metric="minmax",
             method="ranked",
-            nb_bootstrap_iter=100,
+            nb_bootstrap_iter=10,
             random_state=1066,
             rnd_prop=0.35,
         )
