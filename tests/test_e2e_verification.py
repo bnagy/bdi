@@ -20,13 +20,12 @@ from bdi import BDIVerifier  # type: ignore
 
 # Load gold results from numpy file
 GOLD_SCORES = np.load("tests/gold_e2e_results.npy")
-GOLD_VOCAB = np.load("tests/gold_vocab.npy", allow_pickle=True).item()
 
 # Path to PAN 2014 du_essays dataset
 PAN_DATA_DIR = os.path.join(os.path.dirname(__file__), "data", "du_essays", "train")
 
 
-def load_and_prepare_data(data_dir: str, vocabulary: dict):
+def load_and_prepare_data(data_dir: str):
     """Load PAN dataset and prepare for verification."""
     from bdi.utilities import load_pan_dataset
 
@@ -34,7 +33,7 @@ def load_and_prepare_data(data_dir: str, vocabulary: dict):
     train_labels, train_documents = zip(*train_data)
     test_labels, test_documents = zip(*test_data)
 
-    # Vectorize using char 2-4-grams with fixed vocabulary
+    # Vectorize using char 2-4-grams
     vectorizer = make_pipeline(
         TfidfVectorizer(
             sublinear_tf=True,
@@ -42,8 +41,7 @@ def load_and_prepare_data(data_dir: str, vocabulary: dict):
             norm="l2",
             analyzer="char",
             ngram_range=(2, 4),
-            vocabulary=vocabulary,  # Fixed vocabulary for reproducibility
-            dtype=np.float64,
+            max_features=1000,
         ),
         FunctionTransformer(lambda x: x.todense(), accept_sparse=True),
     )
@@ -68,7 +66,7 @@ class TestE2EVerification:
         """Load and prepare the PAN 2014 du_essays dataset."""
         if not os.path.exists(PAN_DATA_DIR):
             pytest.skip(f"PAN dataset not found at {PAN_DATA_DIR}")
-        return load_and_prepare_data(PAN_DATA_DIR, GOLD_VOCAB)
+        return load_and_prepare_data(PAN_DATA_DIR)
 
     def test_new_verifier_matches_gold_results(self, prepared_data):
         """Test that BDIVerifier produces gold standard results.
