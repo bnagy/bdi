@@ -340,3 +340,123 @@ class TestBDIVerifierEndToEnd:
         # Last 3 should have high confidence for author 1
         assert all(probas[:3] > 0.7)
         assert all(probas[3:] > 0.7)
+
+
+class TestCrossPlatformRNG:
+    """Tests for cross-platform RNG consistency."""
+
+    def test_rng_consistency(self):
+        """Test that numpy RNG produces consistent results cross-platform.
+
+        This test verifies that the default_rng with a fixed seed produces
+        the same integers on different platforms (Linux, macOS, Windows).
+        """
+        rng = np.random.default_rng(42)
+        values = rng.integers(0, 1000, size=100)
+
+        RNG_GOLD = np.array(
+            [
+                89,
+                773,
+                654,
+                438,
+                433,
+                858,
+                85,
+                697,
+                201,
+                94,
+                526,
+                975,
+                735,
+                761,
+                717,
+                786,
+                513,
+                128,
+                839,
+                450,
+                500,
+                370,
+                182,
+                926,
+                781,
+                643,
+                402,
+                822,
+                545,
+                443,
+                450,
+                227,
+                92,
+                554,
+                887,
+                63,
+                858,
+                827,
+                276,
+                631,
+                165,
+                758,
+                700,
+                354,
+                67,
+                970,
+                445,
+                893,
+                677,
+                778,
+                759,
+                194,
+                363,
+                466,
+                497,
+                43,
+                546,
+                154,
+                743,
+                683,
+                922,
+                744,
+                366,
+                967,
+                410,
+                325,
+                905,
+                370,
+                76,
+                469,
+                795,
+                189,
+                462,
+                129,
+                686,
+                475,
+                330,
+                226,
+                564,
+                669,
+                940,
+                437,
+                160,
+                832,
+                629,
+                700,
+                97,
+                312,
+                767,
+                832,
+                435,
+                804,
+                841,
+                387,
+                898,
+                288,
+                239,
+                682,
+                636,
+                139,
+            ]
+        )
+
+        assert np.array_equal(values, RNG_GOLD), "RNG values don't match gold standard!"

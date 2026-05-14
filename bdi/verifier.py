@@ -119,7 +119,7 @@ class BDIVerifier:
             self: The fitted verifier instance.
         """
         logger.info(f"Fitting on {len(y)} documents...")
-        self.train_X = np.array(X, dtype="float")
+        self.train_X = np.array(X, dtype=np.float64)
         self.train_y = np.array(y, dtype="int")
         self.fitted = True
         return self
