@@ -90,10 +90,15 @@ class TestE2EVerification:
 
         # Debug output for CI troubleshooting
         import sys
+
         print(f"\nDEBUG: scores[:10] = {scores[:10]}", file=sys.stderr)
         print(f"DEBUG: GOLD_SCORES[:10] = {GOLD_SCORES[:10]}", file=sys.stderr)
-        print(f"DEBUG: Max diff = {np.max(np.abs(scores - GOLD_SCORES))}", file=sys.stderr)
-        print(f"DEBUG: scipy version = {__import__('scipy').__version__}", file=sys.stderr)
+        print(
+            f"DEBUG: Max diff = {np.max(np.abs(scores - GOLD_SCORES))}", file=sys.stderr
+        )
+        print(
+            f"DEBUG: scipy version = {__import__('scipy').__version__}", file=sys.stderr
+        )
         print(f"DEBUG: numpy version = {np.__version__}", file=sys.stderr)
 
         # Verify against gold standard
