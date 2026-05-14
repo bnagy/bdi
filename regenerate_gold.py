@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 import sys
+import os
 
-sys.path.insert(0, "/Users/ben/code/bdi")
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import numpy as np
 from sklearn.preprocessing import LabelEncoder
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -10,7 +11,10 @@ from sklearn.preprocessing import FunctionTransformer
 from bdi.utilities import load_pan_dataset
 from bdi import BDIVerifier
 
-data_dir = "/Users/ben/code/ruzicka/data/2014/du_essays/train"
+# Use local data directory (copied from PAN 2014 du_essays)
+data_dir = os.path.join(
+    os.path.dirname(__file__), "tests", "data", "du_essays", "train"
+)
 train_data, test_data = load_pan_dataset(data_dir)
 train_labels, train_documents = zip(*train_data)
 test_labels, test_documents = zip(*test_data)

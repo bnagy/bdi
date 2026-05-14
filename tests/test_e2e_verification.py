@@ -7,6 +7,8 @@ This test uses the PAN 2014 du_essays corpus to verify that the BDIVerifier
 produces consistent results with a seeded RNG.
 """
 
+import os
+
 import numpy as np
 import pytest
 from sklearn.preprocessing import LabelEncoder
@@ -18,6 +20,9 @@ from bdi import BDIVerifier  # type: ignore
 
 # Load gold results from numpy file
 GOLD_SCORES = np.load("tests/gold_e2e_results.npy")
+
+# Path to PAN 2014 du_essays dataset
+PAN_DATA_DIR = os.path.join(os.path.dirname(__file__), "data", "du_essays", "train")
 
 
 def load_and_prepare_data(data_dir: str):
@@ -59,8 +64,9 @@ class TestE2EVerification:
     @pytest.fixture
     def prepared_data(self):
         """Load and prepare the PAN 2014 du_essays dataset."""
-        data_dir = "/Users/ben/code/ruzicka/data/2014/du_essays/train"
-        return load_and_prepare_data(data_dir)
+        if not os.path.exists(PAN_DATA_DIR):
+            pytest.skip(f"PAN dataset not found at {PAN_DATA_DIR}")
+        return load_and_prepare_data(PAN_DATA_DIR)
 
     def test_new_verifier_matches_gold_results(self, prepared_data):
         """Test that BDIVerifier produces gold standard results.
