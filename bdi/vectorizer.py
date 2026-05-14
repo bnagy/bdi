@@ -61,7 +61,7 @@ class StdDevScaler(BaseEstimator):
         self.weights_ = np.asarray(scaler.scale_)
         return self
 
-    def transform(self, X: sp.spmatrix | NDArray[np.float64]) -> sp.spmatrix:  # type: ignore[override]
+    def transform(self, X: sp.spmatrix | NDArray[np.float64]) -> sp.spmatrix:
         """
         Scale data by dividing by standard deviations.
 
@@ -213,11 +213,7 @@ class Vectorizer:
         Returns:
             Dense array of shape (n_texts, n_features).
         """
-        # sklearn Pipeline.transform returns a sparse matrix; toarray() converts to dense.
-        # We use cast() because scipy's type stubs don't properly type toarray()'s return.
-        sparse_result = cast(sp.spmatrix, self.transformer.transform(texts))
-        dense_result: np.ndarray = np.array(sparse_result)
-        return dense_result
+        return self.transformer.transform(texts).toarray()  # type: ignore
 
     def fit_transform(self, texts: Collection[str]) -> np.ndarray:
         """
