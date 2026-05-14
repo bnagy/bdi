@@ -76,7 +76,3 @@ dmypy.json
 
 # Jupyter Notebook
 .ipynb_checkpoints
-
-# Generated files
-tests/benchmark_results.json
-tests/gold_e2e_results.npy
