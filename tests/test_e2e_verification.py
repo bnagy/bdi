@@ -33,15 +33,14 @@ def load_and_prepare_data(data_dir: str):
     train_labels, train_documents = zip(*train_data)
     test_labels, test_documents = zip(*test_data)
 
-    # Vectorize using char 2-4-grams
+    # Vectorize using char 2-3-grams
     vectorizer = make_pipeline(
         TfidfVectorizer(
             sublinear_tf=True,
             use_idf=False,
-            norm="l1",
+            norm="l2",
             analyzer="char",
-            ngram_range=(2, 4),
-            max_features=1000,
+            ngram_range=(2, 3),
         ),
         FunctionTransformer(lambda x: x.todense(), accept_sparse=True),
     )
