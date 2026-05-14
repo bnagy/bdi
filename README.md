@@ -1,5 +1,8 @@
 # BDIVerifier
 
+[![Tests](https://github.com/bnagy/bdi/actions/workflows/test.yml/badge.svg)](https://github.com/bnagy/bdi/actions/workflows/test.yml)
+[![Coverage](https://codecov.io/gh/bnagy/bdi/branch/main/graph/badge.svg)](https://codecov.io/gh/bnagy/bdi)
+
 **Bootstrap Distance Imposters verification for authorship attribution.**
 
 This package provides a clean implementation of the BDI (Bootstrap Distance Imposters) verification algorithm for authorship attribution tasks. BDI is an update to the General Imposters method that incorporates improvements from Potha and Stamatatos, along with a novel bootstrapping method that provides better interpretability.
