@@ -7,75 +7,34 @@ This test uses the PAN 2014 du_essays corpus to verify that the BDIVerifier
 produces consistent results with a seeded RNG.
 """
 
-import os
-
 import numpy as np
 import pytest
-from sklearn.preprocessing import LabelEncoder
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.pipeline import make_pipeline
-from sklearn.preprocessing import FunctionTransformer
 
 from bdi import BDIVerifier  # type: ignore
 
 # Load gold results from numpy file
 GOLD_SCORES = np.load("tests/gold_e2e_results.npy")
-
-# Path to PAN 2014 du_essays dataset
-PAN_DATA_DIR = os.path.join(os.path.dirname(__file__), "data", "du_essays", "train")
-
-
-def load_and_prepare_data(data_dir: str):
-    """Load PAN dataset and prepare for verification."""
-    from bdi.utilities import load_pan_dataset
-
-    train_data, test_data = load_pan_dataset(data_dir)
-    train_labels, train_documents = zip(*train_data)
-    test_labels, test_documents = zip(*test_data)
-
-    # Vectorize using char 2-4-grams
-    vectorizer = make_pipeline(
-        TfidfVectorizer(
-            sublinear_tf=True,
-            use_idf=False,
-            norm="l2",
-            analyzer="char",
-            ngram_range=(2, 4),
-            max_features=1000,
-        ),
-        FunctionTransformer(lambda x: x.todense(), accept_sparse=True),
-    )
-
-    train_X = vectorizer.fit_transform(train_documents)
-    test_X = vectorizer.transform(test_documents)
-
-    # Encode labels
-    label_encoder = LabelEncoder()
-    label_encoder.fit(train_labels + test_labels)
-    train_y = np.array(label_encoder.transform(train_labels))
-    test_y = np.array(label_encoder.transform(test_labels))
-
-    return train_X, train_y, test_X, test_y
+GOLD_TRAIN_X = np.load("tests/gold_train_X.npy")
+GOLD_TEST_X = np.load("tests/gold_test_X.npy")
+GOLD_TRAIN_Y = np.load("tests/gold_train_y.npy")
+GOLD_TEST_Y = np.load("tests/gold_test_y.npy")
 
 
 class TestE2EVerification:
     """End-to-end verification tests for BDIVerifier."""
 
-    @pytest.fixture
-    def prepared_data(self):
-        """Load and prepare the PAN 2014 du_essays dataset."""
-        if not os.path.exists(PAN_DATA_DIR):
-            pytest.skip(f"PAN dataset not found at {PAN_DATA_DIR}")
-        return load_and_prepare_data(PAN_DATA_DIR)
-
-    def test_new_verifier_matches_gold_results(self, prepared_data):
+    def test_new_verifier_matches_gold_results(self):
         """Test that BDIVerifier produces gold standard results.
 
         These gold results were generated using the same parameters
         (minmax metric, ranked method, 10 bootstrap iterations,
         random_state=1066, rnd_prop=0.35, nb_imposters=30).
         """
-        train_X, train_y, test_X, test_y = prepared_data
+        # Use pre-vectorized data for reproducibility across platforms
+        train_X = GOLD_TRAIN_X
+        train_y = GOLD_TRAIN_Y
+        test_X = GOLD_TEST_X
+        test_y = GOLD_TEST_Y
 
         # Run BDIVerifier with same parameters as gold results
         verifier = BDIVerifier(

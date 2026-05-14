@@ -159,6 +159,7 @@ class Vectorizer:
             "vocabulary": vocabulary,
             "decode_error": "ignore",
             "stop_words": ignore,
+            "dtype": np.float64,
         }
 
         if ngram_type == "word":
