@@ -75,7 +75,7 @@ class StdDevScaler(BaseEstimator):
             X_csr = sp.csr_matrix(X, dtype=np.float64)
         else:
             X_csr = cast(sp.csr_matrix, X)
-        for i in range(X_csr.shape[0]):
+        for i in range(X_csr.shape[0]):  # type: ignore
             start, end = X_csr.indptr[i], X_csr.indptr[i + 1]
             X_csr.data[start:end] = (
                 X_csr.data[start:end] / self.weights_[X_csr.indices[start:end]]
