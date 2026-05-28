@@ -5,12 +5,12 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "bdi"
 version = "1.0.0"
-description = "Burrows-Distance Imposters verification for authorship attribution"
+description = "Bootstrap Distance Imposters verification for authorship attribution"
 readme = "README.md"
 license = {text = "MIT"}
 requires-python = ">=3.11"
 authors = [
-    {name = "BDI Authors"}
+    {name = "Ben Nagy"}
 ]
 keywords = ["authorship", "verification", "nlp", "stylometry"]
 classifiers = [
@@ -31,6 +31,7 @@ dependencies = [
     "pandas>=2.0.0",
     "networkx>=3.0",
     "matplotlib>=3.8.0",
+    "mpl-fontkit>=0.5.0",
     "typing_extensions>=4.0.0",
 ]
 
