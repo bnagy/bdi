@@ -4,13 +4,18 @@
 BDIVerifier: Authorship Verification in the General Imposters Framework.
 
 This package provides a clean implementation of the Bootstrap Distance Imposters
-(BDI) verification algorithm for authorship attribution.
+(BDI) verification algorithm for authorship attribution, plus the Eder
+Bootstrap Consensus Tree (BCT) visualization.
 
 Example:
     >>> from bdi import BDIVerifier, Vectorizer
     >>> verifier = BDIVerifier(metric="manhattan", method="ranked")
     >>> verifier.fit(X_train, y_train)
     >>> scores = verifier.predict_proba(X_test, y_test)
+
+    >>> from bdi import eder_bct, plot_bct
+    >>> graph_trim = eder_bct(X, y, n=1000)
+    >>> fig, ax = plot_bct(graph_trim, work_names, y)
 """
 
 import logging
@@ -40,6 +45,7 @@ from .metrics import (  # noqa: E402
     cosine,
     nini,
 )
+from .bct import eder_bct, plot_bct  # noqa: E402
 
 __all__ = [
     "BDIVerifier",
@@ -55,4 +61,6 @@ __all__ = [
     "common_ngrams",
     "cosine",
     "nini",
+    "eder_bct",
+    "plot_bct",
 ]
