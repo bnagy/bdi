@@ -314,9 +314,12 @@ def plot_bct(
     ax.set_facecolor("white")
 
     # --- Edges with gradient coloring ---
+    # Each edge is drawn as a single polyline. We create individual 2-point
+    # segments with linearly interpolated colors, using butt caps to avoid
+    # circular artifacts at joints.
     edge_segments: list[list[np.ndarray]] = []
-    edge_colors: list[tuple[float, ...]] = []
-    edge_lws: list[float] = []
+    edge_colors: list[tuple[float, float, float, float]] = []
+    edge_lws_list: list[float] = []
 
     for u, v, d in filtered_edges:
         w_norm = (d["weight"] - w_min) / (w_max - w_min + 1e-9)
@@ -333,7 +336,7 @@ def plot_bct(
             perp = np.array([-direction[1], direction[0]])
             perp = perp / np.linalg.norm(perp)
             ctrl = (s + e) / 2 + perp * curvature * length
-            t = np.linspace(0, 1, 60)
+            t = np.linspace(0, 1, 80)
             pts = (
                 np.outer((1 - t) ** 2, s)
                 + np.outer(2 * (1 - t) * t, ctrl)
@@ -346,14 +349,14 @@ def plot_bct(
                 ) + (a,)
                 edge_segments.append([pts[i], pts[i + 1]])
                 edge_colors.append(seg_color)
-                edge_lws.append(lw)
+                edge_lws_list.append(lw)
 
     if edge_segments:
         lc = LineCollection(
             edge_segments,
             colors=edge_colors,
-            linewidths=edge_lws,
-            capstyle="round",
+            linewidths=edge_lws_list,
+            capstyle="butt",
             zorder=1,
         )
         ax.add_collection(lc)
