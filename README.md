@@ -38,7 +38,6 @@ X_test = np.random.rand(10, 50)
 y_test = np.array([0] * 5 + [1] * 5)
 probas = verifier.predict_proba(X_test, y_test)
 ```
-
 ## API Reference
 
 ### BDIVerifier
@@ -134,6 +133,44 @@ Unlike the original General Imposters method which outputs binarized "votes", BD
 - Koppel, M. and Winter, Y. (2014). Determining if Two Documents are by the Same Author. JASIST, 65(1): 178-187.
 - Potha, C. and Stamatatos, E. (2017). Improved Imposters Approach for Authorship Verification.
 - Kestemont, M. et al. (2015). Computational Authorship Verification Method Attributes New Work to Major 2nd Century African Author. JASIST.
+
+## Bootstrap Consensus Trees (BCT)
+
+The `eder_bct` function implements the Eder Bootstrap Consensus Tree algorithm for visualizing document similarity networks. It produces force-directed graphs with gradient-colored curved edges, where nodes represent document chunks and edge weights reflect bootstrap similarity.
+
+```python
+from bdi import eder_bct, plot_bct
+from bdi.metrics import cosine
+
+# Run BCT algorithm
+graph_trim = eder_bct(X, y, n=1000, metric=cosine)
+
+# Visualize with highlighted works
+fig, ax = plot_bct(
+    graph_trim, work_names, y,
+    highlight_works=["WorkA", "WorkB"],
+    min_weight=80,
+    layout_k=0.3,
+    curvature=0.15,
+)
+plt.show()
+```
+
+![BCT Example](examples/bct_demo_custom.png)
+
+Key features:
+- **Gradient-colored edges**: Edge colors interpolate between endpoint node colors, showing cluster membership
+- **Force-directed layout**: Spring layout with configurable repulsion and curvature
+- **Label dodging**: Cluster labels are automatically positioned to avoid overlap
+- **Edge weight filtering**: Display only strong edges while keeping layout stable
+- **Post-hoc customization**: Returns `(fig, ax)` for further matplotlib customization
+
+See the [example notebook](examples/eder_bct_demo.ipynb) for a complete walkthrough with synthetic data.
+
+### References
+
+- Eder, M. (2017). Visualization in stylometry: cluster analysis using networks. Digital Scholarship in the Humanities, 32(1), 50-64.
+- https://computationalstylistics.github.io/projects/bootstrap-networks/
 
 ## License
 

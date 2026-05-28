@@ -318,7 +318,7 @@ def plot_bct(
     # segments with linearly interpolated colors, using butt caps to avoid
     # circular artifacts at joints.
     edge_segments: list[list[np.ndarray]] = []
-    edge_colors: list[tuple[float, float, float, float]] = []
+    edge_colors: list[tuple[float, ...]] = []
     edge_lws_list: list[float] = []
 
     for u, v, d in filtered_edges:
@@ -344,9 +344,10 @@ def plot_bct(
             )
             for i in range(len(pts) - 1):
                 frac = i / (len(pts) - 1)
-                seg_color = tuple(
-                    (1 - frac) * cu[j] + frac * cv[j] for j in range(3)
-                ) + (a,)
+                r = (1 - frac) * cu[0] + frac * cv[0]
+                g = (1 - frac) * cu[1] + frac * cv[1]
+                b = (1 - frac) * cu[2] + frac * cv[2]
+                seg_color: tuple[float, float, float, float] = (r, g, b, a)
                 edge_segments.append([pts[i], pts[i + 1]])
                 edge_colors.append(seg_color)
                 edge_lws_list.append(lw)
