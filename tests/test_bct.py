@@ -108,7 +108,7 @@ class TestPlotBct:
 
     def test_dodge_labels_false(self, simple_data, graph_trim):
         X, y, work_names = simple_data
-        fig, ax = plot_bct(graph_trim, work_names, y, dodge_labels=False)
+        fig, ax = plot_bct(graph_trim, work_names, y, dodge=False)
         assert fig is not None
         plt.close(fig)
 

@@ -1,28 +1,5 @@
-"""Bootstrap Consensus Tree (BCT) visualization.
+"""BCT plotting and visualization."""
 
-Implementation of the Eder BCT algorithm for authorship verification, with
-networkx/matplotlib visualization.
-
-References:
-    - Eder, M. (2017). Visualization in stylometry: cluster analysis using
-      networks. Digital Scholarship in the Humanities, 32(1), 50-64.
-    - https://computationalstylistics.github.io/projects/bootstrap-networks/
-
-Example:
-    >>> from bdi import eder_bct, plot_bct
-    >>> from bdi.metrics import cosine
-    >>> graph_trim = eder_bct(X, y, n=1000, metric=cosine)
-    >>> fig, ax = plot_bct(graph_trim, work_names, y)
-
-    # Post-hoc customization via fig/ax:
-    >>> ax.legend().remove()
-    >>> ax.set_facecolor("#f5f5f5")
-    >>> for text in ax.texts:
-    ...     text.set_fontweight("normal")
-    >>> plt.show()
-"""
-
-import warnings
 from typing import Any, Optional, cast
 
 import networkx as nx
@@ -33,153 +10,9 @@ from matplotlib.axes import Axes
 from matplotlib.collections import LineCollection
 from matplotlib.colors import to_rgba
 from matplotlib.figure import Figure
-from sklearn.neighbors import KNeighborsClassifier
 
-__all__ = ["eder_bct", "plot_bct"]
-
-
-def _dodge_labels(
-    labels: list[str],
-    positions: dict[str, tuple[float, float]],
-    ax: Axes,
-    fontsize: int = 9,
-    fontfamily: str = "Roboto Condensed",
-    fontweight: str = "bold",
-    pad: float = 0.35,
-    iterations: int = 50,
-    repulsion: float = 0.08,
-    attraction: float = 0.02,
-) -> dict[str, tuple[float, float]]:
-    """Dodge overlapping label positions using force-directed repulsion.
-
-    For each pair of labels whose bounding boxes overlap, applies a repulsion
-    force pushing them apart. Also applies a weak attraction force pulling
-    each label back toward its original centroid to prevent excessive drift.
-
-    Returns:
-        Dict mapping label -> (x, y) dodged position.
-    """
-    if len(labels) <= 1:
-        return positions
-
-    temp_texts = {}
-    for w in labels:
-        t = ax.text(
-            positions[w][0],
-            positions[w][1],
-            w,
-            fontsize=fontsize,
-            fontfamily=fontfamily,
-            fontweight=fontweight,
-            ha="center",
-            va="center",
-            alpha=0,
-        )
-        t.set_bbox(
-            dict(boxstyle=f"round,pad={pad}", facecolor="none", edgecolor="none")
-        )
-        temp_texts[w] = t
-
-    fig = ax.figure
-    fig.canvas.draw()
-
-    bboxes = {}
-    for w, t in temp_texts.items():
-        bbox = t.get_window_extent()
-        bboxes[w] = bbox.transformed(ax.transData.inverted())
-
-    pos = {w: np.array(p, dtype=float) for w, p in positions.items()}
-    orig_pos = {w: np.array(p, dtype=float) for w, p in positions.items()}
-
-    for _ in range(iterations):
-        forces = {w: np.zeros(2) for w in labels}
-
-        for i, w1 in enumerate(labels):
-            for w2 in labels[i + 1 :]:
-                b1, b2 = bboxes[w1], bboxes[w2]
-                if b1.overlaps(b2):
-                    c1 = np.array([b1.x0 + b1.width / 2, b1.y0 + b1.height / 2])
-                    c2 = np.array([b2.x0 + b2.width / 2, b2.y0 + b2.height / 2])
-                    diff = c1 - c2
-                    dist = np.linalg.norm(diff)
-                    if dist < 1e-9:
-                        diff = np.random.randn(2) * 0.01
-                        dist = np.linalg.norm(diff)
-                    force = repulsion * diff / dist
-                    forces[w1] += force
-                    forces[w2] -= force
-
-        for w in labels:
-            forces[w] += attraction * (orig_pos[w] - pos[w])
-
-        max_move = 0.0
-        for w in labels:
-            pos[w] += forces[w]
-            max_move = max(max_move, float(np.linalg.norm(forces[w])))
-
-        for w, t in temp_texts.items():
-            t.set_position((float(pos[w][0]), float(pos[w][1])))
-        fig.canvas.draw()
-        for w, t in temp_texts.items():
-            bboxes[w] = t.get_window_extent().transformed(ax.transData.inverted())
-
-        if max_move < 1e-4:
-            break
-
-    for t in temp_texts.values():
-        t.remove()
-
-    return {w: (float(p[0]), float(p[1])) for w, p in pos.items()}
-
-
-def eder_bct(
-    X: pd.DataFrame,
-    y: list[str],
-    n: int = 500,
-    keep_pct: float = 0.2,
-    feats_pct: float = 0.3,
-    rng: np.random.Generator = np.random.default_rng(),
-    metric: Any = "cosine",
-) -> pd.DataFrame:
-    """Bootstrap Consensus Tree (Eder et al.).
-
-    At each iteration, samples a random subset of features and computes
-    3-nearest-neighbors. Edge weights are the inverse rank (3 for nearest,
-    2 for second, 1 for third), aggregated across all iterations.
-
-    Returns:
-        DataFrame with columns ['from', 'to', 'weight'].
-
-    Raises:
-        ValueError: If X and y have different lengths.
-    """
-    if len(X) != len(y):
-        raise ValueError(f"X has {len(X)} rows but y has {len(y)} labels.")
-
-    dfs = []
-    cl = KNeighborsClassifier(n_neighbors=3, metric=metric)
-    with warnings.catch_warnings():
-        warnings.filterwarnings(
-            "ignore",
-            category=UserWarning,
-            message="The number of unique classes is greater than 50%",
-        )
-        for _ in range(n):
-            this_X = X.sample(int(X.shape[1] * feats_pct), axis=1, random_state=rng)
-            cl.fit(this_X, y)
-            dists, indices = cl.kneighbors(n_neighbors=3)
-            dicts = []
-            for i, node_ary in enumerate(indices):
-                for j, node in enumerate(node_ary):
-                    dicts.append(
-                        {"from": y[i], "to": y[node], "weight": len(node_ary) - j}
-                    )
-            dfs.append(pd.DataFrame(dicts))
-    graph = pd.concat(dfs).groupby(["from", "to"], as_index=False).agg("sum")
-    n_keep = int(len(graph) * keep_pct)
-    # nlargest signature in pandas stubs is narrower than runtime behavior
-    result = cast(pd.DataFrame, graph.nlargest(n_keep, "weight"))  # pyright: ignore
-    return result
+from .fonts import ensure_fonts
+from .labels import dodge_labels
 
 
 def plot_bct(
@@ -201,7 +34,7 @@ def plot_bct(
     layout_k: float = 0.5,
     layout_iterations: int = 100,
     curvature: float = 0.18,
-    dodge_labels: bool = True,
+    dodge: bool = True,
     dodge_iterations: int = 50,
     dodge_repulsion: float = 0.08,
     ax: Optional[Axes] = None,
@@ -260,7 +93,7 @@ def plot_bct(
             Default: 100.
         curvature (float): Edge curvature factor (higher = more curved).
             Default: 0.18.
-        dodge_labels (bool): Whether to apply force-directed label dodging.
+        dodge (bool): Whether to apply force-directed label dodging.
             Default: True.
         dodge_iterations (int): Number of dodge iterations. Default: 50.
         dodge_repulsion (float): Repulsion strength between overlapping
@@ -273,6 +106,8 @@ def plot_bct(
     Returns:
         tuple[Figure, Axes]: The figure and axes objects.
     """
+
+    ensure_fonts()
 
     if ax is None:
         fig, ax = plt.subplots(figsize=figsize, dpi=dpi)
@@ -414,8 +249,8 @@ def plot_bct(
         ys = [pos[n][1] for n in nodes]
         centroids[w] = (float(np.mean(xs)), float(np.mean(ys)))
 
-    if dodge_labels and len(centroids) > 1:
-        label_pos = _dodge_labels(
+    if dodge and len(centroids) > 1:
+        label_pos = dodge_labels(
             list(centroids.keys()),
             centroids,
             ax,
@@ -463,7 +298,7 @@ def plot_bct(
                 label=w,
             )
         )
-    ax.legend(
+    legend = ax.legend(
         handles=legend_handles,
         loc="upper left",
         bbox_to_anchor=(0.82, 0.98),
@@ -473,6 +308,9 @@ def plot_bct(
         title="Works",
         title_fontsize=legend_fontsize + 1,
     )
+    legend.get_title().set_fontfamily("Roboto Condensed")
+    for text in legend.get_texts():
+        text.set_fontfamily("Roboto Condensed")
 
     if title is None:
         title = f"Bootstrap Consensus Tree ({len(G.nodes())} nodes, {len(filtered_edges)} edges shown)"
