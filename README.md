@@ -1,7 +1,8 @@
 # BDIVerifier
 
 [![Tests](https://github.com/bnagy/bdi/actions/workflows/test.yml/badge.svg)](https://github.com/bnagy/bdi/actions/workflows/test.yml)
-[![Python](https://img.shields.io/badge/python-3.11%20%7C%203.12%20%7C%203.13-blue)](https://www.python.org/)
+[![Python 3.11–3.14](https://img.shields.io/badge/python-3.11%20%7C%203.12%20%7C%203.13%20%7C%203.14-blue)](https://www.python.org/)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
 **Bootstrap Distance Imposters verification for authorship attribution.**
 
