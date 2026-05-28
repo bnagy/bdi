@@ -1,7 +1,7 @@
 # BDIVerifier
 
 [![Tests](https://github.com/bnagy/bdi/actions/workflows/test.yml/badge.svg)](https://github.com/bnagy/bdi/actions/workflows/test.yml)
-[![Coverage](https://codecov.io/gh/bnagy/bdi/branch/main/graph/badge.svg)](https://codecov.io/gh/bnagy/bdi)
+[![Python](https://img.shields.io/badge/python-3.11%20%7C%203.12%20%7C%203.13-blue)](https://www.python.org/)
 
 **Bootstrap Distance Imposters verification for authorship attribution.**
 
@@ -10,13 +10,7 @@ This package provides a clean implementation of the BDI (Bootstrap Distance Impo
 ## Installation
 
 ```bash
-pip install bdi
-```
-
-For development:
-
-```bash
-pip install -e ".[dev]"
+pip install git+https://github.com/bnagy/bdi.git
 ```
 
 ## Quick Start
